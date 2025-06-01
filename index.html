@@ -1,25 +1,98 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Video Page</title>
-  <style>
-    body, html {
-      margin: 0;
-      padding: 0;
-      height: 100%;
-      background: #000;
-    }
-    iframe {
-      width: 100%;
-      height: 100%;
-      border: none;
-    }
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Opening in AdBlock Browser...</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: #121212;
+            color: white;
+            text-align: center;
+            padding: 50px;
+            margin: 0;
+        }
+        .loader {
+            width: 50px;
+            height: 50px;
+            border: 5px solid #333;
+            border-top: 5px solid #00BCD4;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 20px;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
 </head>
 <body>
-  <iframe src="https://www.youtube.com/embed/dQw4w9WgXcQ?enablejsapi=1&rel=0&autoplay=0&fs=1"
-          allowfullscreen></iframe>
+    <div class="loader"></div>
+    <h1>🛡️ AdBlock Browser</h1>
+    <p>Opening URL in ad-free browser...</p>
+    <p id="url-display"></p>
+    <button onclick="openInBrowser()" style="background: #00BCD4; color: white; border: none; padding: 10px 20px; border-radius: 5px; margin-top: 20px;">
+        Open in Regular Browser
+    </button>
+
+    <script>
+        // Get URL parameter
+        function getUrlParameter(name) {
+            const urlParams = new URLSearchParams(window.location.search);
+            return urlParams.get(name);
+        }
+        
+        // Extract the target URL
+        const targetUrl = getUrlParameter('u');
+        
+        if (!targetUrl) {
+            document.body.innerHTML = '<h1>Error: No URL provided</h1><p>Usage: http://yoursite.com?u=https://example.com</p>';
+        } else {
+            // Display the URL
+            document.getElementById('url-display').textContent = `Target: ${targetUrl}`;
+            
+            // Try to open in app
+            openInApp(targetUrl);
+        }
+        
+        function openInApp(url) {
+            const isAndroid = /Android/i.test(navigator.userAgent);
+            
+            if (!isAndroid) {
+                // Not Android, open in browser
+                window.location.href = url;
+                return;
+            }
+            
+            // Try custom scheme first
+            const customScheme = `adblocker://open?url=${encodeURIComponent(url)}`;
+            
+            // Create hidden iframe to trigger custom scheme
+            const iframe = document.createElement('iframe');
+            iframe.style.display = 'none';
+            iframe.src = customScheme;
+            document.body.appendChild(iframe);
+            
+            // Try Android intent after delay
+            setTimeout(() => {
+                document.body.removeChild(iframe);
+                const intentUrl = `intent://${url.replace(/https?:\/\//, '')}#Intent;scheme=https;package=com.codocrest.adblockbrowser;S.browser_fallback_url=${encodeURIComponent(url)};end`;
+                window.location.href = intentUrl;
+            }, 1000);
+            
+            // Final fallback after 3 seconds
+            setTimeout(() => {
+                window.location.href = url;
+            }, 3000);
+        }
+        
+        function openInBrowser() {
+            if (targetUrl) {
+                window.location.href = targetUrl;
+            }
+        }
+    </script>
 </body>
 </html>
